@@ -6,8 +6,12 @@ import (
 
 type RoutesHandler struct {
 	Usecases usecases.Usecases
+	UserRepo usecases.UserRepo
 }
 
-func NewRouter(ucHandler usecases.Usecases) RoutesHandler {
-	return RoutesHandler{Usecases: ucHandler}
+func NewRouter(ucHandler usecases.Usecases, u usecases.UserRepo) RoutesHandler {
+	return RoutesHandler{
+		Usecases: ucHandler,
+		UserRepo: u,
+	}
 }
