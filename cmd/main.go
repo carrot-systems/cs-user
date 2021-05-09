@@ -8,6 +8,7 @@ import (
 	configurationClient "github.com/carrot-systems/csl-configuration-client"
 	discoveryClient "github.com/carrot-systems/csl-discovery-client"
 	env "github.com/carrot-systems/csl-env"
+	"gorm.io/gorm"
 	"log"
 )
 
@@ -29,10 +30,18 @@ func main() {
 
 	ginConfiguration := config.LoadGinConfiguration()
 
-	usecasesHandler := usecases.NewInteractor()
-
-	//TODO: move calling postgres to a condition with an env repo engine check
-	userRepo := postgres.NewUserRepo()
+	dbConfig := config.LoadGormConfiguration()
+	var userRepo usecases.UserRepo
+	var db *gorm.DB
+	if dbConfig.Engine == "POSTGRES" {
+		db = postgres.StartGormDatabase(dbConfig)
+		err = postgres.Migrate(db, "./migrations", "users_migration")
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		userRepo = postgres.NewUserRepo(db)
+	}
+	usecasesHandler := usecases.NewInteractor(userRepo)
 
 	restServer := rest.NewServer(ginConfiguration)
 	routesHandler := rest.NewRouter(usecasesHandler, userRepo)

@@ -13,6 +13,8 @@ type interactor struct {
 	userRepo UserRepo
 }
 
-func NewInteractor() interactor {
-	return interactor{}
+func NewInteractor(uR UserRepo) interactor {
+	return interactor{
+		userRepo: uR,
+	}
 }
