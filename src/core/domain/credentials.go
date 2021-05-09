@@ -1,5 +1,5 @@
 package domain
 
 type Credentials struct {
-	Password string
+	Password string `json:"password" binding:"required"`
 }
