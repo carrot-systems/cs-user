@@ -4,7 +4,8 @@ CREATE TABLE "public"."users" (
     "updated_at" timestamptz,
     "deleted_at" timestamptz,
     "display_name" text,
-    "handle" uuid,
-    "mail" bool,
-    PRIMARY KEY ("id")
+    "handle" text,
+    "mail" text,
+    "password" text,
+    PRIMARY KEY ("handle")
 );
