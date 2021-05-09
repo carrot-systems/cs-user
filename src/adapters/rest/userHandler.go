@@ -13,7 +13,7 @@ func (rH RoutesHandler) GetUserMiddleware(c *gin.Context) {
 func (rH RoutesHandler) CreateUserHandler(c *gin.Context) {
 	var creationRequest domain.UserCreationRequest
 
-	err := c.ShouldBind(&creationRequest)
+	err := c.ShouldBindJSON(&creationRequest)
 
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, domain.Status{ //TODO: Translate error to correct code

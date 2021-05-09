@@ -9,7 +9,13 @@ func (i interactor) CreateUser(user domain.UserCreationRequest) error {
 		return domain.ErrHandleAlreadyUsed
 	}
 
-	return i.userRepo.CreateUser(user)
+	err = i.userRepo.CreateUser(user)
+
+	if err != nil {
+		return domain.ErrUserCreation
+	}
+
+	return nil
 }
 
 //TODO: implement permission management
