@@ -47,21 +47,25 @@ func (i interactor) RemoveUser(connectedUser domain.User, handle string) error {
 	return i.userRepo.DeleteUser(userToRemove.Handle)
 }
 
-//TODO: implement permission management
 func (i interactor) GetProfile(connectedUser domain.User, handle string) (*domain.User, error) {
-	/*connectedUser, err := i.userRepo.FindHandle(connectedUserHandle)
 	var userToFetch *domain.User
 
-	if err != nil {
-		return nil, domain.ErrConnectedUserNotFound
+	if handle == connectedUser.Handle {
+		return &connectedUser, nil
+	} else {
+		if !i.hasPermissions(connectedUser, domain.PermReadAllUser) {
+			return nil, domain.ErrUnauthorized
+		}
+
+		user, err := i.userRepo.FindHandle(handle)
+		if err != nil {
+			return nil, domain.ErrFailedToGetUser
+		}
+
+		userToFetch = user
 	}
 
-	if handle == connectedUserHandle {
-		return connectedUser, nil
-	}
-
-	return i.userRepo.FindHandle(userToFetch.Handle)*/
-	return nil, nil
+	return i.userRepo.FindHandle(userToFetch.Handle)
 }
 
 //TODO: implement permission management
