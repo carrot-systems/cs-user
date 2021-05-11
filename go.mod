@@ -8,6 +8,7 @@ require (
 	github.com/carrot-systems/csl-env v1.0.0
 	github.com/gin-gonic/gin v1.7.1
 	github.com/golang-migrate/migrate/v4 v4.14.1
+	github.com/google/uuid v1.1.2
 	github.com/lib/pq v1.8.0
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/gorm v1.21.9
