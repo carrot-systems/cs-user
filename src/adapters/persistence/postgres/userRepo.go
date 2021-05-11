@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"errors"
 	"github.com/carrot-systems/cs-user/src/core/domain"
 	"github.com/carrot-systems/cs-user/src/core/usecases"
 	"github.com/google/uuid"
@@ -22,27 +21,27 @@ type userRepo struct {
 }
 
 func (u userRepo) FindHandle(handle string) (*domain.User, error) {
-	var user *domain.User
+	var user *User
 
 	result := u.db.Where("handle = ?", handle).First(&user)
 
 	if user == nil || result.Error != nil {
-		return nil, errors.New("user not found")
+		return nil, domain.ErrUserNotFound
 	}
 
-	return user, nil
+	return user.toDomain(), nil
 }
 
 func (u userRepo) FindId(id string) (*domain.User, error) {
-	var user *domain.User
+	var user *User
 
 	result := u.db.Where("id = ?", id).First(&user)
 
 	if user == nil || result.Error != nil {
-		return nil, errors.New("user not found")
+		return nil, domain.ErrUserNotFound
 	}
 
-	return user, nil
+	return user.toDomain(), nil
 }
 
 func (u userRepo) CreateUser(user domain.UserCreationRequest) error {
@@ -56,8 +55,9 @@ func (u userRepo) CreateUser(user domain.UserCreationRequest) error {
 }
 
 func (u userRepo) DeleteUser(handle string) error {
-	u.db.Delete("handle = ?", handle)
-	return nil
+	result := u.db.Where("handle = ?", handle).Delete(&User{})
+
+	return result.Error
 }
 
 func (u userRepo) UpdateUser(handle string, user *domain.User) error {
@@ -71,8 +71,9 @@ func NewUserRepo(db *gorm.DB) usecases.UserRepo {
 	}
 }
 
-func (u User) toDomain() domain.User {
-	return domain.User{
+func (u User) toDomain() *domain.User {
+	return &domain.User{
+		ID:          u.ID,
 		DisplayName: u.DisplayName,
 		Handle:      u.Handle,
 		Mail:        u.Mail,
@@ -84,7 +85,7 @@ func fromDomain(f domain.User) User {
 		DisplayName: f.DisplayName,
 		Handle:      f.Handle,
 		Mail:        f.Mail,
-		Password:    "",
+		ID:          f.ID,
 	}
 }
 
