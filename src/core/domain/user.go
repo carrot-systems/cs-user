@@ -1,6 +1,7 @@
 package domain
 
 type User struct {
+	ID          string
 	DisplayName string `json:"display_name" binding:"required"`
 	Handle      string `json:"handle" binding:"required"`
 	Mail        string `json:"mail" binding:"required"`
