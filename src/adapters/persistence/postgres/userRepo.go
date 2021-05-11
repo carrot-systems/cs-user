@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/carrot-systems/cs-user/src/core/domain"
 	"github.com/carrot-systems/cs-user/src/core/usecases"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,12 +21,24 @@ type userRepo struct {
 	db *gorm.DB
 }
 
-func (u userRepo) FindUser(handler string) (*domain.User, error) {
+func (u userRepo) FindHandle(handle string) (*domain.User, error) {
 	var user *domain.User
 
-	u.db.Where("handle = ?", handler).First(&user)
+	result := u.db.Where("handle = ?", handle).First(&user)
 
-	if user != nil {
+	if user == nil || result.Error != nil {
+		return nil, errors.New("user not found")
+	}
+
+	return user, nil
+}
+
+func (u userRepo) FindId(id string) (*domain.User, error) {
+	var user *domain.User
+
+	result := u.db.Where("id = ?", id).First(&user)
+
+	if user == nil || result.Error != nil {
 		return nil, errors.New("user not found")
 	}
 
@@ -34,20 +47,20 @@ func (u userRepo) FindUser(handler string) (*domain.User, error) {
 
 func (u userRepo) CreateUser(user domain.UserCreationRequest) error {
 	var userPersisted = fromCreationRequest(user)
-	/*id := uuid.New().String()
-	userPersisted.ID = id*/
+	id := uuid.New().String()
+	userPersisted.ID = id
 
 	result := u.db.Create(&userPersisted)
 
 	return result.Error
 }
 
-func (u userRepo) DeleteUser(handler string) error {
-	u.db.Delete("handle = ?", handler)
+func (u userRepo) DeleteUser(handle string) error {
+	u.db.Delete("handle = ?", handle)
 	return nil
 }
 
-func (u userRepo) UpdateUser(handler string, user *domain.User) error {
+func (u userRepo) UpdateUser(handle string, user *domain.User) error {
 	//TODO: implement
 	panic("implement me")
 }
