@@ -75,7 +75,7 @@ func (rH RoutesHandler) RemoveUserHandler(c *gin.Context) {
 
 	authenticatedUser := auth.(*domain.User)
 
-	userToRemove := c.Param("handler")
+	userToRemove := c.Param("handle")
 
 	err := rH.Usecases.RemoveUser(*authenticatedUser, userToRemove)
 
@@ -106,7 +106,7 @@ func (rH RoutesHandler) GetProfileHandler(c *gin.Context) {
 
 	authenticatedUser := auth.(domain.User)
 
-	userToGet := c.Param("handler")
+	userToGet := c.Param("handle")
 
 	user, err := rH.Usecases.GetProfile(authenticatedUser, userToGet)
 
@@ -139,7 +139,7 @@ func (rH RoutesHandler) EditProfileHandler(c *gin.Context) {
 
 	authenticatedUser := auth.(domain.User)
 
-	userToEdit := c.Param("handler")
+	userToEdit := c.Param("handle")
 	var editRequest domain.User
 
 	err := c.ShouldBind(&editRequest)
