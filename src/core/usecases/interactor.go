@@ -3,10 +3,16 @@ package usecases
 import "github.com/carrot-systems/cs-user/src/core/domain"
 
 type UserRepo interface {
-	FindUser(handler string) (*domain.User, error)
+	FindHandle(handle string) (*domain.User, error)
+	FindId(id string) (*domain.User, error)
 	CreateUser(user domain.UserCreationRequest) error
-	DeleteUser(handler string) error
-	UpdateUser(handler string, user *domain.User) error
+	DeleteUser(handle string) error
+	UpdateUser(handle string, user *domain.User) error
+}
+
+type PermissionRepo interface {
+	FindPermissions(id string) (int, error)
+	SetPermissions(id string, permission int) error
 }
 
 type interactor struct {

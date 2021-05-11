@@ -1,9 +1,15 @@
 package usecases
 
-import "github.com/carrot-systems/cs-user/src/core/domain"
+import (
+	"github.com/carrot-systems/cs-user/src/core/domain"
+)
+
+func (i interactor) hasPermissions(user domain.User, permission int) bool {
+	return false
+}
 
 func (i interactor) CreateUser(user domain.UserCreationRequest) error {
-	userWithThisHandler, err := i.userRepo.FindUser(user.User.Handle)
+	userWithThisHandler, err := i.userRepo.FindHandle(user.User.Handle)
 
 	if err == nil && userWithThisHandler != nil {
 		return domain.ErrHandleAlreadyUsed
@@ -18,25 +24,30 @@ func (i interactor) CreateUser(user domain.UserCreationRequest) error {
 	return nil
 }
 
-//TODO: implement permission management
-func (i interactor) RemoveUser(connectedUserHandle string, handle string) error {
-	connectedUser, err := i.userRepo.FindUser(connectedUserHandle)
+func (i interactor) RemoveUser(connectedUser domain.User, handle string) error {
 	var userToRemove *domain.User
 
-	if err != nil {
-		return domain.ErrConnectedUserNotFound
-	}
+	if handle == connectedUser.Handle {
+		userToRemove = &connectedUser
+	} else {
+		if !i.hasPermissions(connectedUser, domain.PermDeleteUser) {
+			return domain.ErrUnauthorized
+		}
 
-	if handle == connectedUserHandle {
-		userToRemove = connectedUser
+		user, err := i.userRepo.FindHandle(handle)
+		if err != nil {
+			return domain.ErrFailedToGetUser
+		}
+
+		userToRemove = user
 	}
 
 	return i.userRepo.DeleteUser(userToRemove.Handle)
 }
 
 //TODO: implement permission management
-func (i interactor) GetProfile(connectedUserHandle string, handle string) (*domain.User, error) {
-	connectedUser, err := i.userRepo.FindUser(connectedUserHandle)
+func (i interactor) GetProfile(connectedUser domain.User, handle string) (*domain.User, error) {
+	/*connectedUser, err := i.userRepo.FindHandle(connectedUserHandle)
 	var userToFetch *domain.User
 
 	if err != nil {
@@ -47,12 +58,13 @@ func (i interactor) GetProfile(connectedUserHandle string, handle string) (*doma
 		return connectedUser, nil
 	}
 
-	return i.userRepo.FindUser(userToFetch.Handle)
+	return i.userRepo.FindHandle(userToFetch.Handle)*/
+	return nil, nil
 }
 
 //TODO: implement permission management
-func (i interactor) EditProfile(connectedUserHandle string, handle string, user *domain.User) error {
-	connectedUser, err := i.userRepo.FindUser(connectedUserHandle)
+func (i interactor) EditProfile(connectedUser domain.User, handle string, user *domain.User) error {
+	/*connectedUser, err := i.userRepo.FindHandle(connectedUserHandle)
 	var userToEdit *domain.User
 
 	if err != nil {
@@ -63,6 +75,7 @@ func (i interactor) EditProfile(connectedUserHandle string, handle string, user 
 		userToEdit = connectedUser
 	}
 
-	return i.userRepo.UpdateUser(userToEdit.Handle, user)
+	return i.userRepo.UpdateUser(userToEdit.Handle, user)*/
+	return nil
 
 }

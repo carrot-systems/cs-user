@@ -82,7 +82,18 @@ func (rH RoutesHandler) GetProfileHandler(c *gin.Context) {
 }
 
 func (rH RoutesHandler) EditProfileHandler(c *gin.Context) {
-	userHandler := "" //TODO: get handler
+	auth, exists := c.Get("authenticatedUser")
+
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, domain.Status{ //TODO: Translate error to correct code
+			Success: false,
+			Message: domain.ErrFailedToGetUser.Error(),
+		})
+		return
+	}
+
+	authenticatedUser := auth.(domain.User)
+
 	userToEdit := c.Param("handler")
 	var editRequest domain.User
 
