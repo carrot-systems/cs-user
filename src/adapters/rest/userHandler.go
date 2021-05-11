@@ -6,25 +6,26 @@ import (
 	"net/http"
 )
 
+func (rH RoutesHandler) handleError(c *gin.Context, err error) {
+	c.AbortWithStatusJSON(codeForError(err), domain.Status{
+		Success: false,
+		Message: err.Error(),
+	})
+}
+
 func (rH RoutesHandler) GetUserMiddleware(c *gin.Context) {
 	var user domain.AuthenticatedUserResponse
 
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, domain.Status{
-			Success: false,
-			Message: domain.ErrNotAuthenticated.Error(),
-		})
+		rH.handleError(c, domain.ErrNotAuthenticated)
 		return
 	}
 
 	authenticatedUser, err := rH.UserRepo.FindId(user.ID.String())
 
 	if authenticatedUser == nil || err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, domain.Status{
-			Success: false,
-			Message: domain.ErrNotAuthenticated.Error(),
-		})
+		rH.handleError(c, domain.ErrNotAuthenticated)
 		return
 	}
 
@@ -33,26 +34,33 @@ func (rH RoutesHandler) GetUserMiddleware(c *gin.Context) {
 	c.Next()
 }
 
+func (rH RoutesHandler) getAuthenticatedUser(c *gin.Context) *domain.User {
+	auth, exists := c.Get("authenticatedUser")
+
+	if !exists {
+		rH.handleError(c, domain.ErrFailedToGetUser)
+		return nil
+	}
+
+	authenticatedUser := auth.(*domain.User)
+
+	return authenticatedUser
+}
+
 func (rH RoutesHandler) CreateUserHandler(c *gin.Context) {
 	var creationRequest domain.UserCreationRequest
 
 	err := c.ShouldBindJSON(&creationRequest)
 
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, domain.Status{ //TODO: Translate error to correct code
-			Success: false,
-			Message: err.Error(),
-		})
+		rH.handleError(c, ErrFormValidation)
 		return
 	}
 
 	err = rH.Usecases.CreateUser(creationRequest)
 
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, domain.Status{ //TODO: Translate error to correct code
-			Success: false,
-			Message: err.Error(),
-		})
+		rH.handleError(c, err)
 		return
 	}
 
@@ -63,24 +71,18 @@ func (rH RoutesHandler) CreateUserHandler(c *gin.Context) {
 }
 
 func (rH RoutesHandler) RemoveUserHandler(c *gin.Context) {
-	auth, exists := c.Get("authenticatedUser")
+	authenticatedUser := rH.getAuthenticatedUser(c)
 
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, domain.Status{ //TODO: Translate error to correct code
-			Success: false,
-			Message: domain.ErrFailedToGetUser.Error(),
-		})
+	if authenticatedUser == nil {
 		return
 	}
 
-	authenticatedUser := auth.(*domain.User)
-
 	userToRemove := c.Param("handle")
 
-	err := rH.Usecases.RemoveUser(*authenticatedUser, userToRemove)
+	err := rH.Usecases.RemoveUser(authenticatedUser, userToRemove)
 
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, domain.Status{ //TODO: Translate error to correct code
+		c.AbortWithStatusJSON(codeForError(err), domain.Status{
 			Success: false,
 			Message: err.Error(),
 		})
@@ -94,27 +96,18 @@ func (rH RoutesHandler) RemoveUserHandler(c *gin.Context) {
 }
 
 func (rH RoutesHandler) GetProfileHandler(c *gin.Context) {
-	auth, exists := c.Get("authenticatedUser")
+	authenticatedUser := rH.getAuthenticatedUser(c)
 
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, domain.Status{ //TODO: Translate error to correct code
-			Success: false,
-			Message: domain.ErrFailedToGetUser.Error(),
-		})
+	if authenticatedUser == nil {
 		return
 	}
-
-	authenticatedUser := auth.(domain.User)
 
 	userToGet := c.Param("handle")
 
 	user, err := rH.Usecases.GetProfile(authenticatedUser, userToGet)
 
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, domain.Status{ //TODO: Translate error to correct code
-			Success: false,
-			Message: err.Error(),
-		})
+		rH.handleError(c, err)
 		return
 	}
 
@@ -127,17 +120,11 @@ func (rH RoutesHandler) GetProfileHandler(c *gin.Context) {
 }
 
 func (rH RoutesHandler) EditProfileHandler(c *gin.Context) {
-	auth, exists := c.Get("authenticatedUser")
+	authenticatedUser := rH.getAuthenticatedUser(c)
 
-	if !exists {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, domain.Status{ //TODO: Translate error to correct code
-			Success: false,
-			Message: domain.ErrFailedToGetUser.Error(),
-		})
+	if authenticatedUser == nil {
 		return
 	}
-
-	authenticatedUser := auth.(domain.User)
 
 	userToEdit := c.Param("handle")
 	var editRequest domain.User
@@ -145,20 +132,14 @@ func (rH RoutesHandler) EditProfileHandler(c *gin.Context) {
 	err := c.ShouldBind(&editRequest)
 
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, domain.Status{ //TODO: Translate error to correct code
-			Success: false,
-			Message: err.Error(),
-		})
+		rH.handleError(c, err)
 		return
 	}
 
 	err = rH.Usecases.EditProfile(authenticatedUser, userToEdit, &editRequest)
 
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, domain.Status{ //TODO: Translate error to correct code
-			Success: false,
-			Message: err.Error(),
-		})
+		rH.handleError(c, err)
 		return
 	}
 

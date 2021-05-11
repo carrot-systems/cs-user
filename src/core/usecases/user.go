@@ -4,7 +4,7 @@ import (
 	"github.com/carrot-systems/cs-user/src/core/domain"
 )
 
-func (i interactor) hasPermissions(user domain.User, permission int) bool {
+func (i interactor) hasPermissions(user *domain.User, permission int) bool {
 	permissions := i.permissionRepo.FindPermissions(user.ID, domain.UserPermissionIdentifier)
 
 	return permissions&permission != 0
@@ -26,14 +26,14 @@ func (i interactor) CreateUser(user domain.UserCreationRequest) error {
 	return nil
 }
 
-func (i interactor) RemoveUser(connectedUser domain.User, handle string) error {
+func (i interactor) RemoveUser(connectedUser *domain.User, handle string) error {
 	var userToRemove *domain.User
 
 	if handle == connectedUser.Handle {
-		userToRemove = &connectedUser
+		userToRemove = connectedUser
 	} else {
 		if !i.hasPermissions(connectedUser, domain.PermDeleteUser) {
-			return domain.ErrUnauthorized
+			return domain.ErrForbidden
 		}
 
 		user, err := i.userRepo.FindHandle(handle)
@@ -47,14 +47,14 @@ func (i interactor) RemoveUser(connectedUser domain.User, handle string) error {
 	return i.userRepo.DeleteUser(userToRemove.Handle)
 }
 
-func (i interactor) GetProfile(connectedUser domain.User, handle string) (*domain.User, error) {
+func (i interactor) GetProfile(connectedUser *domain.User, handle string) (*domain.User, error) {
 	var userToFetch *domain.User
 
 	if handle == connectedUser.Handle {
-		return &connectedUser, nil
+		return connectedUser, nil
 	} else {
 		if !i.hasPermissions(connectedUser, domain.PermReadAllUser) {
-			return nil, domain.ErrUnauthorized
+			return nil, domain.ErrForbidden
 		}
 
 		user, err := i.userRepo.FindHandle(handle)
@@ -69,7 +69,7 @@ func (i interactor) GetProfile(connectedUser domain.User, handle string) (*domai
 }
 
 //TODO: implement permission management
-func (i interactor) EditProfile(connectedUser domain.User, handle string, user *domain.User) error {
+func (i interactor) EditProfile(connectedUser *domain.User, handle string, user *domain.User) error {
 	/*connectedUser, err := i.userRepo.FindHandle(connectedUserHandle)
 	var userToEdit *domain.User
 
