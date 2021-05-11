@@ -5,7 +5,9 @@ import (
 )
 
 func (i interactor) hasPermissions(user domain.User, permission int) bool {
-	return false
+	permissions := i.permissionRepo.FindPermissions(user.ID, domain.UserPermissionIdentifier)
+
+	return permissions&permission != 0
 }
 
 func (i interactor) CreateUser(user domain.UserCreationRequest) error {
