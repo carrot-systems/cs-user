@@ -8,3 +8,4 @@ var ( //This user can:
 	PermReadAllUser    = 8 //Read an user profile
 	PermFullUserAccess = PermCreateUser & PermEditUser & PermDeleteUser & PermReadAllUser
 )
+var UserPermissionIdentifier = "permissions.usermanagement"
