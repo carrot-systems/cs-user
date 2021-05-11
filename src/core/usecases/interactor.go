@@ -11,8 +11,8 @@ type UserRepo interface {
 }
 
 type PermissionRepo interface {
-	FindPermissions(id string) (int, error)
-	SetPermissions(id string, permission int) error
+	FindPermissions(id string, permission string) int
+	SetPermissions(id string, permission string, flag int) error
 }
 
 type interactor struct {
