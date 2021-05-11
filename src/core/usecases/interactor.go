@@ -16,11 +16,13 @@ type PermissionRepo interface {
 }
 
 type interactor struct {
-	userRepo UserRepo
+	userRepo       UserRepo
+	permissionRepo PermissionRepo
 }
 
-func NewInteractor(uR UserRepo) interactor {
+func NewInteractor(uR UserRepo, pR PermissionRepo) interactor {
 	return interactor{
-		userRepo: uR,
+		userRepo:       uR,
+		permissionRepo: pR,
 	}
 }

@@ -31,7 +31,10 @@ func main() {
 	ginConfiguration := config.LoadGinConfiguration()
 
 	dbConfig := config.LoadGormConfiguration()
+
 	var userRepo usecases.UserRepo
+	var permissionRepo usecases.PermissionRepo
+
 	var db *gorm.DB
 	if dbConfig.Engine == "POSTGRES" {
 		db = postgres.StartGormDatabase(dbConfig)
@@ -40,8 +43,9 @@ func main() {
 			log.Fatalln(err.Error())
 		}
 		userRepo = postgres.NewUserRepo(db)
+		permissionRepo = postgres.NewPermissionRepo(db)
 	}
-	usecasesHandler := usecases.NewInteractor(userRepo)
+	usecasesHandler := usecases.NewInteractor(userRepo, permissionRepo)
 
 	restServer := rest.NewServer(ginConfiguration)
 	routesHandler := rest.NewRouter(usecasesHandler, userRepo)
