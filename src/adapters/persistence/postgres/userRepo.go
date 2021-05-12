@@ -7,6 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
+//TODO: move password to another repo
+//TODO: salt it also
 type User struct {
 	gorm.Model
 	ID          string `gorm:"type:uuid;primary_key"`

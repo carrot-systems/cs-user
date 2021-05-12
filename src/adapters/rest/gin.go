@@ -28,6 +28,7 @@ func (server GinServer) Start() {
 			Addr:    fmt.Sprintf("%s:%d", server.Config.Host, server.Config.Port),
 			Handler: server.Router,
 		}
+
 		err := httpsServer.ListenAndServeTLS("./certificates/server.cert", "./certificates/server.key")
 		if err != nil {
 			log.Fatalln("Could not start server", err)
