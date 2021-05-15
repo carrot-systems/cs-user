@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"github.com/carrot-systems/cs-user/src/core/usecases"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +18,7 @@ type permissionRepo struct {
 	db *gorm.DB
 }
 
-func (u permissionRepo) FindPermissions(id string, permission string) int {
+func (u permissionRepo) FindPermissions(id uuid.UUID, permission string) int {
 	var foundPermission Permission
 
 	result := u.db.Where("users_id = ? AND permission = ?", id, permission).FirstOrCreate(&foundPermission)
@@ -30,7 +31,7 @@ func (u permissionRepo) FindPermissions(id string, permission string) int {
 	return foundPermission.Flag
 }
 
-func (u permissionRepo) SetPermissions(id string, permission string, flag int) error {
+func (u permissionRepo) SetPermissions(id uuid.UUID, permission string, flag int) error {
 	//TODO: implem this
 	panic("implement me")
 }

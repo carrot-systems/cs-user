@@ -9,9 +9,10 @@ import (
 
 //TODO: move password to another repo
 //TODO: salt it also
+//TODO(bug): a deleted user do not release its handle (because of soft deletion but unique keyword don't care for that)
 type User struct {
 	gorm.Model
-	ID          string `gorm:"type:uuid;primary_key"`
+	ID          uuid.UUID `gorm:"type:uuid;primary_key"`
 	Handle      string
 	DisplayName string
 	Mail        string
@@ -20,6 +21,18 @@ type User struct {
 
 type userRepo struct {
 	db *gorm.DB
+}
+
+func (u userRepo) FindIdWithoutCredentials(id string) (*domain.User, error) {
+	var user *User
+
+	result := u.db.Where("id = ?", id).First(&user)
+
+	if user == nil || result.Error != nil {
+		return nil, domain.ErrUserNotFound
+	}
+
+	return user.toDomain(), nil
 }
 
 func (u userRepo) FindHandle(handle string) (*domain.User, error) {
@@ -34,10 +47,10 @@ func (u userRepo) FindHandle(handle string) (*domain.User, error) {
 	return user.toDomain(), nil
 }
 
-func (u userRepo) FindId(id string) (*domain.User, error) {
+func (u userRepo) FindId(handle string, credentials domain.Credentials) (*domain.User, error) {
 	var user *User
 
-	result := u.db.Where("id = ?", id).First(&user)
+	result := u.db.Where("handle = ? AND password = ?", handle, credentials.Password).First(&user)
 
 	if user == nil || result.Error != nil {
 		return nil, domain.ErrUserNotFound
@@ -48,7 +61,7 @@ func (u userRepo) FindId(id string) (*domain.User, error) {
 
 func (u userRepo) CreateUser(user domain.UserCreationRequest) error {
 	var userPersisted = fromCreationRequest(user)
-	id := uuid.New().String()
+	id := uuid.New()
 	userPersisted.ID = id
 
 	result := u.db.Create(&userPersisted)

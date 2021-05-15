@@ -18,7 +18,7 @@ func codeForError(err error) int {
 		return http.StatusUnauthorized
 	case domain.ErrForbidden:
 		return http.StatusForbidden
-	case domain.ErrConnectedUserNotFound, domain.ErrFailedToGetUser:
+	case domain.ErrConnectedUserNotFound, domain.ErrFailedToGetUser, domain.ErrUserNotFound:
 		return http.StatusNotFound
 	case domain.ErrUserCreation:
 		return http.StatusInternalServerError

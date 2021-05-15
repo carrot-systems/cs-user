@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"github.com/carrot-systems/cs-user/src/core/domain"
+	"github.com/google/uuid"
 )
 
 func (i interactor) hasPermissions(user *domain.User, permission int) bool {
@@ -84,4 +85,14 @@ func (i interactor) EditProfile(connectedUser *domain.User, handle string, user 
 	return i.userRepo.UpdateUser(userToEdit.Handle, user)*/
 	return nil
 
+}
+
+func (i interactor) GetProfileId(handle string, credentials domain.Credentials) (uuid.UUID, error) {
+	user, err := i.userRepo.FindId(handle, credentials)
+
+	if err != nil || user == nil {
+		return uuid.UUID{}, err
+	}
+
+	return user.ID, nil
 }
